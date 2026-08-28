@@ -303,6 +303,10 @@ def session_login(user, password, solver_type, api_base_url, client_key):
             cookies = session.cookies.get_dict()
             response_header_names = {name.lower() for name in response.headers.keys()}
             print(f"登录响应认证头: {sorted(response_header_names.intersection({'x-security-token', 'x-csrf-token', 'set-cookie'}))}")
+            print(f"登录响应头名称: {sorted(response_header_names)}")
+            redirect = resp_json.get("redirect") if isinstance(resp_json, dict) else None
+            if isinstance(redirect, str):
+                print(f"登录跳转信息: path={redirect.split('?', 1)[0]}, has_query={'?' in redirect}, length={len(redirect)}")
             response_cookies = response.cookies.get_dict()
             history_statuses = [item.status_code for item in response.history]
             history_cookie_names = sorted({name.lower() for item in response.history for name in item.headers.keys() if name.lower() == 'set-cookie'})
