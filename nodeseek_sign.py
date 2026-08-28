@@ -303,7 +303,13 @@ def session_login(user, password, solver_type, api_base_url, client_key):
             cookies = session.cookies.get_dict()
             response_header_names = {name.lower() for name in response.headers.keys()}
             print(f"登录响应认证头: {sorted(response_header_names.intersection({'x-security-token', 'x-csrf-token', 'set-cookie'}))}")
+            response_cookies = response.cookies.get_dict()
+            history_statuses = [item.status_code for item in response.history]
+            history_cookie_names = sorted({name.lower() for item in response.history for name in item.headers.keys() if name.lower() == 'set-cookie'})
+            print(f"登录响应历史状态: {history_statuses}; 历史 Set-Cookie: {history_cookie_names}; 响应 Cookie 名称: {sorted(response_cookies.keys())}")
             print(f"登录成功，获取到的 Cookie 名称: {sorted(cookies.keys())}")
+            if not cookies and response_cookies:
+                cookies = response_cookies
             cookie_string = '; '.join([f"{k}={v}" for k, v in cookies.items()])
             if not cookie_string:
                 print("登录响应成功但未获取到 Cookie")
