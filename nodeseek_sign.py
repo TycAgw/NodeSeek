@@ -296,27 +296,16 @@ def session_login(user, password, solver_type, api_base_url, client_key):
     }
     try:
         response = session.post("https://www.nodeseek.com/api/account/signIn", json=data, headers=headers)
-        print(f"登录接口 HTTP 状态: {response.status_code}")
         resp_json = response.json()
-        print(f"登录响应字段: {sorted(resp_json.keys()) if isinstance(resp_json, dict) else type(resp_json).__name__}")
         if resp_json.get("success"):
             cookies = session.cookies.get_dict()
-            response_header_names = {name.lower() for name in response.headers.keys()}
-            print(f"登录响应认证头: {sorted(response_header_names.intersection({'x-security-token', 'x-csrf-token', 'set-cookie'}))}")
-            print(f"登录响应头名称: {sorted(response_header_names)}")
             redirect = resp_json.get("redirect") if isinstance(resp_json, dict) else None
-            if isinstance(redirect, str):
-                print(f"登录跳转信息: path={redirect.split('?', 1)[0]}, has_query={'?' in redirect}, length={len(redirect)}")
-            response_cookies = response.cookies.get_dict()
-            history_statuses = [item.status_code for item in response.history]
-            history_cookie_names = sorted({name.lower() for item in response.history for name in item.headers.keys() if name.lower() == 'set-cookie'})
-            print(f"登录响应历史状态: {history_statuses}; 历史 Set-Cookie: {history_cookie_names}; 响应 Cookie 名称: {sorted(response_cookies.keys())}")
-            print(f"登录成功，获取到的 Cookie 名称: {sorted(cookies.keys())}")
-            if not cookies and response_cookies:
-                cookies = response_cookies
             cookie_string = '; '.join([f"{k}={v}" for k, v in cookies.items()])
             if not cookie_string:
-                print("登录响应成功但未获取到 Cookie")
+                if isinstance(redirect, str) and redirect.startswith("/emailSignIn.html"):
+                    print("NodeSeek 要求邮箱动态验证，请先在浏览器完成验证后配置 NS_COOKIE")
+                else:
+                    print("登录响应成功但未获取到 Cookie")
             return cookie_string
         else:
             print("登录失败:", resp_json.get("message") or resp_json.get("error") or "未提供错误信息")
