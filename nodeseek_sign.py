@@ -301,6 +301,8 @@ def session_login(user, password, solver_type, api_base_url, client_key):
         print(f"登录响应字段: {sorted(resp_json.keys()) if isinstance(resp_json, dict) else type(resp_json).__name__}")
         if resp_json.get("success"):
             cookies = session.cookies.get_dict()
+            response_header_names = {name.lower() for name in response.headers.keys()}
+            print(f"登录响应认证头: {sorted(response_header_names.intersection({'x-security-token', 'x-csrf-token', 'set-cookie'}))}")
             print(f"登录成功，获取到的 Cookie 名称: {sorted(cookies.keys())}")
             cookie_string = '; '.join([f"{k}={v}" for k, v in cookies.items()])
             if not cookie_string:
