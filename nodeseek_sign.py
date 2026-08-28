@@ -296,13 +296,18 @@ def session_login(user, password, solver_type, api_base_url, client_key):
     }
     try:
         response = session.post("https://www.nodeseek.com/api/account/signIn", json=data, headers=headers)
+        print(f"登录接口 HTTP 状态: {response.status_code}")
         resp_json = response.json()
+        print(f"登录响应字段: {sorted(resp_json.keys()) if isinstance(resp_json, dict) else type(resp_json).__name__}")
         if resp_json.get("success"):
             cookies = session.cookies.get_dict()
+            print(f"登录成功，获取到的 Cookie 名称: {sorted(cookies.keys())}")
             cookie_string = '; '.join([f"{k}={v}" for k, v in cookies.items()])
+            if not cookie_string:
+                print("登录响应成功但未获取到 Cookie")
             return cookie_string
         else:
-            print("登录失败:", resp_json.get("message"))
+            print("登录失败:", resp_json.get("message") or resp_json.get("error") or "未提供错误信息")
             return None
     except Exception as e:
         print("登录异常:", e)
